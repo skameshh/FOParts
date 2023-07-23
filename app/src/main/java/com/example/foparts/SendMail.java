@@ -3,6 +3,7 @@ package com.example.foparts;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.Properties;
 import javax.mail.Message;
@@ -17,7 +18,7 @@ public class SendMail extends AsyncTask {
     private static String TAG = "FOParts";
     private Context context;
     private Session session;
-    private String email;
+    private String email = "kamesh.shankaran@halliburton.com";
     private String subject;
     private String message;
 
@@ -28,8 +29,8 @@ public class SendMail extends AsyncTask {
         this.message = message;
     }
 
-    private String from_email = "skameshh@gmail.com";
-    private String pwd = "mwfozalgwyzfvdyx";
+    private String from_email = "halauto.foparts@gmail.com";// "skameshh@gmail.com";
+    private String pwd = "hvbzudpwcdwzjwzu" ;//"mwfozalgwyzfvdyx";
     @Override
     protected Object doInBackground(Object[] objects) {
         Properties props = new Properties();
@@ -63,6 +64,7 @@ public class SendMail extends AsyncTask {
         catch (MessagingException e) {
             e.printStackTrace();
             Log.v(TAG,"Error in doEmail "+e.getLocalizedMessage());
+            Toast.makeText(context, "Submitted failed, Please try again ", Toast.LENGTH_LONG).show();
         }
         return null;
     }

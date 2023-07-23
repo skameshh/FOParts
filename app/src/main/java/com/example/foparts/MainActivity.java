@@ -2,13 +2,17 @@ package com.example.foparts;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentTransaction;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -17,21 +21,90 @@ import java.util.Properties;
 import javax.mail.*;
 import javax.mail.internet.*;
 
+
 public class MainActivity extends AppCompatActivity {
     private static String TAG = "FOParts";
     private Button btnSubmit;
-    private EditText txtVal1;
+    public static EditText txtConfirmationNumber;
+    private TextView lblMainTitle = null;
     private EditText txtVal2;
+    private TextView lblMessage = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         btnSubmit = findViewById(R.id.btnSubmit);
-        txtVal1 = findViewById(R.id.txtVal1);
-        txtVal2 = findViewById(R.id.txtVal2);
+        txtConfirmationNumber = findViewById(R.id.txtConfirmationNumber);
+        txtVal2 = txtConfirmationNumber;
+        lblMainTitle = findViewById(R.id.lblMainTitle);
+        lblMainTitle.setText(Html.fromHtml(getString(R.string.title_main)));
+        lblMessage = findViewById(R.id.lblMessage);
+        lblMessage.setText("");
+
+        doLoadFragment();
+
+        try {
+            Intent intent = getIntent();
+            String conf_number = intent.getStringExtra("conf_num");
+            txtConfirmationNumber.setText(conf_number);
+        }catch (Exception ee){
+            Log.v(TAG,"Error in "+ee.getLocalizedMessage());
+        }
+
+       //boolean bb = com.hal.mfgsystems.Global.checkNetwork(this);
 
     }
+
+    private void doLoadFragment(){
+        // Begin the transaction
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        // Replace the contents of the container with the new fragment
+        ft.replace(R.id.frameLayout, new HeaderFragment());
+        // or ft.add(R.id.your_placeholder, new FooFragment());
+        // Complete the changes added above
+        ft.commit();
+    }
+
+    public void startStatusActivity(View view){
+        try {
+            lblMessage.setText("");
+            String conf_nm =  txtConfirmationNumber.getText().toString();
+            if(conf_nm.length()<8){
+                Toast.makeText(this, "Confirmation number should not be less than 8 chars ", Toast.LENGTH_LONG).show();
+                txtConfirmationNumber.setText("");
+                txtConfirmationNumber.requestFocus();
+                lblMessage.setText("Confirmation number format error");
+                return;
+            }
+
+            if(conf_nm.length()>10){
+                Toast.makeText(this, "Confirmation number should not be greater than 8 chars ", Toast.LENGTH_LONG).show();
+                txtConfirmationNumber.setText("");
+                txtConfirmationNumber.requestFocus();
+                lblMessage.setText("Confirmation number format error");
+                return;
+            }
+
+            Intent intent = new Intent(MainActivity .this, StatusUpdateActivity.class);
+            intent.putExtra("conf_num", txtConfirmationNumber.getText().toString());
+            startActivity(intent);
+        }catch(Exception e){
+            Log.v(TAG,"Error in "+e.getLocalizedMessage());
+        }
+    }
+
+    public void startScanner(View view){
+        try {
+            Intent intent = new Intent(MainActivity.this, ScanActivityForLogin.class);
+            startActivity(intent);
+        }catch(Exception e){
+            Log.v(TAG,"Error in "+e.getLocalizedMessage());
+        }
+    }
+
+
 
     private String getStrDate(){
         String pattern = "ddMMyyyy-HHmmss";
@@ -40,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
         return date;
     }
 
-    private void doSendEmail(){
+    private void doSendEmail_OLD(){
         // Recipient's email ID needs to be mentioned.
         String to = "skameshh@gmail.com";
 
@@ -89,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
     private String to_email="kamesh.shankaran@halliburton.com";
     private String subject = "Android email test  "+getStrDate();
     private String message = "This is my test message 2";
-    private void doSendGmail(){
+    private void doSendGmail_OLD(){
         Properties props = new Properties();
         props.put("mail.smtp.host", "smtp.gmail.com");
         props.put("mail.smtp.socketFactory.port", "465");
@@ -119,9 +192,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void doEmail(View view){
         try {
-          String val1 =   txtVal1.getText().toString();
+          String val1 =   txtConfirmationNumber.getText().toString();
           String val2 =   txtVal2.getText().toString();
-          subject = "POParts-"+getStrDate();
+          subject = "[POParts]-"+getStrDate();
           message  = "val1:"+val1 +"\n val2:"+val2 +"\n";
 
           Log.v(TAG,message);
@@ -143,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //clear contents
-        txtVal1.setText("");
+        txtConfirmationNumber.setText("");
         txtVal2.setText("");
         Toast.makeText(this, "Submitted successfully ", Toast.LENGTH_LONG).show();
     }
